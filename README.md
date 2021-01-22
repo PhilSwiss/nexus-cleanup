@@ -33,4 +33,11 @@ https://gist.github.com/founddrama/971284
 
 Finally linted the script with [npm-groovy-lint](https://github.com/nvuillam/npm-groovy-lint) to get a cleaner code, somehow
 
+Disclaimer
+===========
+
+There is no warranty for the script or it's functionality, use it at your own risk. 
+
+No licensing at the moment, as this script is put together from various sites with different licensing schemes.
+
 The icon/logo consists of the Nexus Logo © by [Sonatype Inc.](https://www.sonatype.com) & the Broom Symbol © by [HiClipart](https://www.hiclipart.com)
