@@ -1,18 +1,18 @@
 //
-// nexus-cleanup.groovy by P.Schweizer / last changed 09.08.2020
+// nexus-cleanup.groovy by P.Schweizer / last changed 22.01.2021
 //
 // A script to remove old releases from a Nexus3-repository,
 // - https://www.sonatype.com/nexus-repository-oss
 // A fork of purge-old-release-from-nexus-3 by Matt Harrison
-// - https://stackoverflow.com/questions/40742766/purge-old-release-from-nexus-3
+// - https://stackoverflow.com/a/45894920
 // Logging forked from the script by Neil201
-// - https://stackoverflow.com/questions/40742766/purge-old-release-from-nexus-3
+// - https://stackoverflow.com/a/57604767
 // VersionComparator (a sorter for version-numbers) by Rob Friesel
 // - https://gist.github.com/founddrama/971284)
 //
 // Changelog:
-// - ignoring the sorting "ORDER BY last_updated" because dates where resetted
-//   by Nexus during migration from Nexus 2.x to Nexus 3.x
+// - ignoring the sorting "ORDER BY last_updated" because dates where reset by
+//   Nexus during migration from Nexus 2.x to Nexus 3.x
 // - added 3 lists (foundVersions, sortedVersions & removeVersions) for keeping
 //   the versions per component in a sortable format
 // - added sorting with Rob Friesel's version comperator, this sorter handles
@@ -21,6 +21,7 @@
 // - added more logoutput, forked from the script by Neil201
 // - added more documentation to the code
 // - code cleaned up (as much as possible) by using npm-groovy-lint
+// - fixed the links for the scripts where this script was forked from
 //
 
 // Imports for the API
