@@ -49,3 +49,15 @@ There is no warranty for the script or it's functionality, use it at your own ri
 No licensing at the moment, because this script is put together from various sites with different licensing schemes.
 
 The icon/logo consists of the Nexus Logo © by [Sonatype Inc.](https://www.sonatype.com) & the Broom Symbol © by [HiClipart](https://www.hiclipart.com).
+
+
+Bug tracker
+===========
+
+If you have any suggestions, bug reports or annoyances please report them to the issue tracker at https://github.com/PhilSwiss/nexus-cleanup/issues
+
+
+Contributing
+============
+
+Development of `nexus-cleanup` happens at GitHub: https://github.com/PhilSwiss/nexus-cleanup
