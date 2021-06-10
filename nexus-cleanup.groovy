@@ -27,10 +27,14 @@
 // Imports for the API
 import org.sonatype.nexus.repository.storage.StorageFacet
 import org.sonatype.nexus.repository.storage.Query
+import org.sonatype.nexus.repository.storage.Asset
+import org.joda.time.DateTime
 
 // Configuration
 def repositoryName = 'releases'
 def maxArtifactCount = 100
+def retentionDays = 1095;
+def retentionDate = DateTime.now().minusDays(retentionDays).dayOfMonth().roundFloorCopy();
 
 // VersionComperator (Sorter) by Rob Friesel
 def versionComparator = { comperatorA, comperatorB ->
@@ -112,22 +116,37 @@ try {
 
         // Get a list of all surplus version-numbers
         removeVersions = sortedVersions.dropRight(maxArtifactCount)
-        log.info("Remove Versions: ${removeVersions}")
+        log.info("Possible Remove Versions: ${removeVersions}")
 
         // Count total amount of surplus version-numbers
-        totalDelCompCount = totalDelCompCount + removeVersions.size()
         log.info("Component Total Count: ${componentVersions.size()}")
-        log.info("Component Remove Count: ${removeVersions.size()}")
+        log.info("Component Possible Remove Count: ${removeVersions.size()}")
 
         // If there are surplus versions for the component, delete them
         if (componentVersions.size() > maxArtifactCount) {
             componentVersions.eachWithIndex { component, index ->
                 if (component.version() in removeVersions) {
-                    log.info("Deleting Component: ${component.group()}, ${component.name()} ${component.version()}")
-                    // -------------------------------------------------
-                    // uncomment to delete surplus versions of component
-                    // tx.deleteComponent(component);
-                    // -------------------------------------------------
+                        // Only delete if component is last uplated before retention date
+                        def lastUpdateDate = component.lastUpdated();
+
+                        if(lastUpdateDate == null) {
+                                log.warn("No deletion due lastUpdateDate not found for component ${component.group()}, ${component.name()} ${component.version()}")
+                        } else {
+                                log.info("Component ${component.group()}, ${component.name()} ${component.version()} lastUpdateDate is: ${lastUpdateDate}")
+
+                                if(lastUpdateDate.isBefore(retentionDate)) {
+                                        log.info("Component lastUpdateDate: ${lastUpdateDate} is before retentionDate: ${retentionDate}")
+                                        log.info("Deleting Component: ${component.group()}, ${component.name()} ${component.version()}")
+
+                                        // Total count of deleted  components
+                                        totalDelCompCount = totalDelCompCount + 1
+
+                                        // -------------------------------------------------
+                                        // uncomment to delete surplus versions of component
+                                        // tx.deleteComponent(component);
+                                        // -------------------------------------------------
+                                }
+                        }
                 }
             }
         }
@@ -137,6 +156,7 @@ try {
     log.info(" *** Total Deleted Component Count: ${totalDelCompCount} *** ")
     log.info('==================================================')
 } finally {
-    // End the transaction
+    // End the transaction and close it
     tx.commit()
+    tx.close()
 }
