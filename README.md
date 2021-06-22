@@ -9,6 +9,8 @@ This Groovy-script will purge old versions (sorted by version-number) from a rep
 
 You can set the desired repository and a maximum amount of versions at the begining of this script.
 
+Optional: define a retention (in days), so that old versions are only deleted if they are older than the retention.
+
 
 Information
 ===========
@@ -26,6 +28,9 @@ In the end, I forked [Matt Harrison's script](https://stackoverflow.com/a/458949
 Added some helper-lists and the [VersionComperator](https://gist.github.com/founddrama/971284) (a version sorter) by [Rob Friesel](https://gist.github.com/founddrama)
 
 Finally, I linted the script with [npm-groovy-lint](https://github.com/nvuillam/npm-groovy-lint) to get a cleaner code, somehow
+
+I later included the retention-feature kindly provided by [agronlun](https://github.com/agronlun) and some cleanup/optimization by [emetriqChris](https://github.com/emetriqChris)
+
 
 Installation
 ============

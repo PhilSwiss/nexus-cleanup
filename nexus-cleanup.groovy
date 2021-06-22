@@ -1,5 +1,5 @@
 //
-// nexus-cleanup.groovy by P.Schweizer / last changed 22.01.2021
+// nexus-cleanup.groovy by P.Schweizer / last changed 22.06.2021
 //
 // A script to remove old releases from a Nexus3-repository,
 // - https://www.sonatype.com/nexus-repository-oss
@@ -22,19 +22,19 @@
 // - added more documentation to the code
 // - code cleaned up (as much as possible) by using npm-groovy-lint
 // - fixed the links for the scripts where this script was forked from
+// - added function for retention by agronlun
+// - optimized the code, thanks to agronlun and emetriqChris
 //
 
 // Imports for the API
 import org.sonatype.nexus.repository.storage.StorageFacet
 import org.sonatype.nexus.repository.storage.Query
-import org.sonatype.nexus.repository.storage.Asset
 import org.joda.time.DateTime
 
 // Configuration
-def repositoryName = 'releases'
-def maxArtifactCount = 100
-def retentionDays = 1095;
-def retentionDate = DateTime.now().minusDays(retentionDays).dayOfMonth().roundFloorCopy();
+def repositoryName = 'releases' // Name of your nexus-repository
+def maxArtifactCount = 100      // Max. amount of artifacts to keep in repository
+def retentionDays = 0           // Delete surplus artifacts only when older than X (0 = disable)
 
 // VersionComperator (Sorter) by Rob Friesel
 def versionComparator = { comperatorA, comperatorB ->
@@ -76,6 +76,8 @@ log.info('==================================================')
 log.info(":::Operating on Repository: ${repositoryName}")
 log.info('==================================================')
 
+// Get a date
+def retentionDate = DateTime.now().minusDays(retentionDays).dayOfMonth().roundFloorCopy()
 // Get a repository
 def repo = repository.repositoryManager.get(repositoryName)
 // Get a database transaction
@@ -108,45 +110,48 @@ try {
         componentVersions.eachWithIndex { component, index ->
             foundVersions.add(component.version())
          }
-            log.info("Found Versions: ${foundVersions}")
+        log.info("Found Versions: ${foundVersions}")
 
         // Get a sorted list of all version-numbers (with the VersionComperator)
         sortedVersions = foundVersions.sort(versionComparator)
         log.info("Sorted Versions: ${sortedVersions}")
 
         // Get a list of all surplus version-numbers
-        removeVersions = sortedVersions.dropRight(maxArtifactCount)
-        log.info("Possible Remove Versions: ${removeVersions}")
+        surplusVersions = sortedVersions.dropRight(maxArtifactCount)
+
+        // Get a list of all surplus version-numbers older than retention date by agronlun
+        def removeVersions = []
+        componentVersions.eachWithIndex { component, index ->
+            if (component.version() in surplusVersions) {
+                def lastUpdateDate = component.lastUpdated()
+                if (lastUpdateDate == null) {
+                    log.warn("lastUpdated not found: ${component.group()}, ${component.name()} ${component.version()}")
+                } else {
+                    if (lastUpdateDate.isBefore(retentionDate)) {
+                        removeVersions.add(component.version())
+                    } else {
+                        log.info("Version before retention: ${component.version()} - ${component.lastUpdated()}")
+                    }
+                }
+            }
+        }
+        log.info("Remove Versions: ${removeVersions}")
 
         // Count total amount of surplus version-numbers
+        totalDelCompCount = totalDelCompCount + removeVersions.size()
         log.info("Component Total Count: ${componentVersions.size()}")
-        log.info("Component Possible Remove Count: ${removeVersions.size()}")
+        log.info("Component Remove Count: ${removeVersions.size()}")
 
         // If there are surplus versions for the component, delete them
-        if (componentVersions.size() > maxArtifactCount) {
-            componentVersions.eachWithIndex { component, index ->
-                if (component.version() in removeVersions) {
-                        // Only delete if component is last uplated before retention date
-                        def lastUpdateDate = component.lastUpdated();
-
-                        if(lastUpdateDate == null) {
-                                log.warn("No deletion due lastUpdateDate not found for component ${component.group()}, ${component.name()} ${component.version()}")
-                        } else {
-                                log.info("Component ${component.group()}, ${component.name()} ${component.version()} lastUpdateDate is: ${lastUpdateDate}")
-
-                                if(lastUpdateDate.isBefore(retentionDate)) {
-                                        log.info("Component lastUpdateDate: ${lastUpdateDate} is before retentionDate: ${retentionDate}")
-                                        log.info("Deleting Component: ${component.group()}, ${component.name()} ${component.version()}")
-
-                                        // Total count of deleted  components
-                                        totalDelCompCount = totalDelCompCount + 1
-
-                                        // -------------------------------------------------
-                                        // uncomment to delete surplus versions of component
-                                        // tx.deleteComponent(component);
-                                        // -------------------------------------------------
-                                }
-                        }
+        if (removeVersions.size() > 0) {
+            componentVersions.eachWithIndex { comp, index ->
+                if (comp.version() in removeVersions) {
+                    def lastUpdated = comp.lastUpdated()
+                    log.info("Deleting Component: ${comp.group()}, ${comp.name()} ${comp.version()} - ${lastUpdated}")
+                    // -------------------------------------------------
+                    // uncomment to delete surplus versions of component
+                    // tx.deleteComponent(component);
+                    // -------------------------------------------------
                 }
             }
         }
