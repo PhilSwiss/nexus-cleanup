@@ -150,7 +150,7 @@ try {
                     log.info("Deleting Component: ${comp.group()}, ${comp.name()} ${comp.version()} - ${lastUpdated}")
                     // -------------------------------------------------
                     // uncomment to delete surplus versions of component
-                    // tx.deleteComponent(component);
+                    // tx.deleteComponent(comp);
                     // -------------------------------------------------
                 }
             }
