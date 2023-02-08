@@ -3,9 +3,9 @@
 Nexus-Cleanup
 =============
 
-Remove old releases from a Nexus3-repository
+Remove old releases from a Maven2-repository in Nexus3
 
-This Groovy-script will purge old versions (sorted by version-number) from a repository hosted on [Nexus 3.x](https://www.sonatype.com/nexus-repository-oss).
+This Groovy-script will purge old versions (sorted by version-number) from a [maven](https://maven.apache.org/) repository hosted on [Nexus 3.x](https://www.sonatype.com/nexus-repository-oss).
 
 You can set the desired repository and a maximum amount of versions at the begining of this script.
 
