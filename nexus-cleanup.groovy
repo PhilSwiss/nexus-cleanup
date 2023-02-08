@@ -80,6 +80,13 @@ log.info('==================================================')
 def retentionDate = DateTime.now().minusDays(retentionDays).dayOfMonth().roundFloorCopy()
 // Get a repository
 def repo = repository.repositoryManager.get(repositoryName)
+// Check repository
+if (repo.format instanceof org.sonatype.nexus.repository.maven.internal.Maven2Format) {
+       log.info(":::Type of Repository: ${repo.format}")
+} else {
+       log.warn(":::WARNING: repository is NOT of type MAVEN2!")
+}
+log.info('==================================================')
 // Get a database transaction
 def tx = repo.facet(StorageFacet).txSupplier().get()
 try {
